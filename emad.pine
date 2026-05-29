@@ -1,0 +1,49 @@
+//
+// Copyright (C) 2026 Livelandr <livelandr@proton.me>
+//
+// This file is part of EMAD.
+//
+// EMAD is free software: you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// EMAD is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+//
+
+//@version=6
+indicator("EMAD")
+import TradingView/ta/12
+wmaperiod = input(95, "HMA Period")
+smaperiod = input(210, "SMA Period")
+delta = input(20, "Delta") 
+maxval = input(20, "MaximumValue")
+
+TMC = input(1.0, "True Macro Compression")
+
+color maPositiv = input.color(color.blue, "Bull")
+color maNegative = input.color(color.maroon, "Bear")
+
+
+color macdRising = input.color(color.rgb(55, 199, 60), "MACDRising")
+color macdFalling = input.color(color.rgb(240, 82, 82), "MACDFalling")
+
+differ_current = ta.sma(close, math.floor(smaperiod*TMC))  - ta.hma(close, math.floor(wmaperiod*TMC))
+differ_previous = ta.sma(close, math.floor(smaperiod*TMC))[delta] - ta.hma(close, math.floor(wmaperiod*TMC))[delta]
+
+emad = -( differ_current/ (differ_current - differ_previous) )
+
+if (emad > maxval) 
+    emad := maxval
+
+else if (emad < -maxval) 
+    emad := -maxval
+
+color maColor = (emad > 0) ? maPositiv : maNegative
+plot( emad, "EMAD", color=maColor, style = plot.style_area)
